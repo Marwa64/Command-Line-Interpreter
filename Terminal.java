@@ -13,8 +13,30 @@ public class Terminal {
 	public static void mv(String sourcePath, String destinationPath) {
 		
 	};
-	public static void rm(String sourcePath) {
-		
+	public static void rm(String inputPath) {
+
+		String abspath="";
+		inputPath=inputPath.toLowerCase();
+		String current = currentDir.toLowerCase();
+		System.out.println(inputPath.contains(current));
+		if (!(inputPath.contains(currentDir.toLowerCase())) ) {
+			abspath= currentDir+'\\'+inputPath;
+			System.out.println("here");
+			System.out.println(abspath);
+		} else {
+			abspath = inputPath;
+			System.out.println("here2");
+			System.out.println(abspath);
+
+		}
+		File toDelete= new File(abspath);
+		if(!toDelete.isDirectory() && toDelete.exists()) {
+			if (toDelete.delete()) {
+				System.out.println("Deleted the file: " + toDelete.getName());
+			} else {
+				System.out.println("Failed to delete the file.");
+			}
+		}
 	};
 	// Prints the current directory
 	public static void pwd() {
@@ -52,7 +74,7 @@ public class Terminal {
 			userPath = arguments[0];
 		}
 		// This is to handle the short paths
-		// If the path user inputed does not include the current directory and is not empty then we add the current directory to the path
+		// If the path user inputted does not include the current directory and is not empty then we add the current directory to the path
 		if (!userPath.contains(currentDir) && !userPath.equals(defaultDir)) {
 			actualPath = currentDir + "\\" + userPath;
 		} else {
