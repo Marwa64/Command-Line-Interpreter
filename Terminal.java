@@ -15,19 +15,10 @@ public class Terminal {
 	};
 	public static void rm(String inputPath) {
 
-		String abspath="";
-		inputPath=inputPath.toLowerCase();
-		String current = currentDir.toLowerCase();
-		System.out.println(inputPath.contains(current));
-		if (!(inputPath.contains(currentDir.toLowerCase())) ) {
-			abspath= currentDir+'\\'+inputPath;
-			System.out.println("here");
-			System.out.println(abspath);
-		} else {
-			abspath = inputPath;
-			System.out.println("here2");
-			System.out.println(abspath);
+		String abspath=inputPath;
 
+		if (!(inputPath.contains("c:")||inputPath.contains("C:"))) {
+			abspath= currentDir+'\\'+inputPath;
 		}
 		File toDelete= new File(abspath);
 		if(!toDelete.isDirectory() && toDelete.exists()) {
@@ -88,7 +79,7 @@ public class Terminal {
 			System.out.println("'" + userPath + "' : No such file or directory");
 		}
 	}
-	
+
 	// Add any other required command in the same structure
 	
 	public static void main(String[] args) {
