@@ -44,19 +44,26 @@ public class Terminal {
 	};
 	// Changes the current directory
 	public static void cd(String[] arguments) {
-		String path;
+		String userPath, actualPath;
 		// If there are no arguments change the directory to the default directory
 		if (arguments == null) {
-			path = defaultDir;
+			userPath = defaultDir;
 		} else {
-			path = arguments[0];
+			userPath = arguments[0];
 		}
-		File dir = new File(path);
+		// This is to handle the short paths
+		// If the path user inputed does not include the current directory and is not empty then we add the current directory to the path
+		if (!userPath.contains(currentDir) && !userPath.equals(defaultDir)) {
+			actualPath = currentDir + "\\" + userPath;
+		} else {
+			actualPath = userPath;
+		}
+		File dir = new File(actualPath);
 		// Checks if the directory the user entered exists or not
 		if (dir.isDirectory()) {
-			currentDir = path;
+			currentDir = actualPath;
 		} else {
-			System.out.println("'" +path + "' : No such file or directory");
+			System.out.println("'" + userPath + "' : No such file or directory");
 		}
 	}
 	
@@ -67,7 +74,7 @@ public class Terminal {
 		String cmd;
 		String [] arg;
 		System.out.print("\n");
-		
+
 		while(run) {
 			if (defaultDir.equals(currentDir)) {
 				System.out.print(" ~$ ");
