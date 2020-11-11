@@ -6,20 +6,61 @@ public class Terminal {
 	static Scanner in = new Scanner(System.in);
 	static Parser parser = new Parser();
 	static String currentDir = "C:\\", defaultDir = "C:\\";
-	
-	public static void cp(String sourcePath, String destinationPath ) {
-		
-	};
+
+	public static void cp(String sourcePath, String destinationPath) {
+
+	}
+
+	;
+
 	public static void mv(String sourcePath, String destinationPath) {
-		
-	};
-	public static void rm(String inputPath) {
 
-		String abspath=inputPath;
+	}
 
-		if (!(inputPath.contains("c:")||inputPath.contains("C:"))) {
-			abspath= currentDir+'\\'+inputPath;
+	;
+
+	public static void rmdir(String inputPath) {
+		String abspath = inputPath;
+		inputPath = inputPath.toLowerCase();
+		String current = currentDir.toLowerCase();
+
+		if (!(inputPath.contains(current))) {
+			abspath = currentDir + '\\' + inputPath;
 		}
+		File toDelete = new File(abspath);
+
+		recursiveDelete(toDelete);
+
+
+	}
+
+	public static void recursiveDelete(File toDelete){
+		if(!toDelete.exists())
+			return;
+
+		if(toDelete.isDirectory()){
+			for(File f : toDelete.listFiles()){
+				recursiveDelete(f);
+			}
+		}
+
+		toDelete.delete();
+
+		System.out.println("Deleted file/folder: "+toDelete.getAbsolutePath());
+
+
+	}
+
+
+		public static void rm(String inputPath) {
+
+			String abspath = inputPath;
+			inputPath = inputPath.toLowerCase();
+			String current = currentDir.toLowerCase();
+
+			if (!(inputPath.contains(current))) {
+				abspath = currentDir + '\\' + inputPath;
+			}
 		File toDelete= new File(abspath);
 		if(!toDelete.isDirectory() && toDelete.exists()) {
 			if (toDelete.delete()) {
@@ -110,6 +151,9 @@ public class Terminal {
 						break;
 					case "rm":
 						rm(arg[0]);
+						break;
+					case "rmdir":
+						rmdir(arg[0]);
 						break;
 					case "pwd":
 						pwd();
