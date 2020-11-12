@@ -124,7 +124,9 @@ public class Terminal {
 
 	// Prints the current directory
 	public static void pwd() {
-		System.out.println(currentDir);
+		if (parser.overwrite() < 0 && parser.append() < 0) {
+			System.out.println(currentDir);
+		}
 		prevOutput.add(currentDir);
 	};
 
