@@ -1,11 +1,12 @@
 import java.io.*;
-import java.util.*;
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Terminal {
 	static Scanner in = new Scanner(System.in);
 	static Parser parser = new Parser();
 	static String currentDir = "C:\\", defaultDir = "C:\\";
+	static ArrayList<String> prevOutput = new ArrayList<String>();
 
 
 
@@ -24,13 +25,18 @@ public class Terminal {
 
 		String absPath = getAbsolutePath(inputPath);
 		File toRead = new File(absPath);
+		String line;
 
 		Scanner scanner = new Scanner(toRead);
 
 		if (toRead.exists()) {
 			while(scanner.hasNextLine())
 			{
-				System.out.println(scanner.nextLine());
+				line = scanner.nextLine();
+				if (parser.pipe() < 0 && parser.overwrite() < 0 && parser.append() < 0 ) {
+					System.out.println(line);
+				}
+				prevOutput.add(line);
 			}
 		}
 		else System.out.println("No such folder or file");
@@ -42,11 +48,16 @@ public class Terminal {
 		String absPath = getAbsolutePath(inputPath);
 		File toRead = new File(absPath);
 		Scanner scanner = new Scanner(toRead);
+		String line;
 		int counter =10;
 		if (toRead.exists()) {
 
 			while (scanner.hasNextLine()) {
-				System.out.println(scanner.nextLine());
+				line = scanner.nextLine();
+				if (parser.pipe() < 0 && parser.overwrite() < 0 && parser.append() < 0 ) {
+					System.out.println(line);
+				}
+				prevOutput.add(line);
 				counter--;
 				if (counter == 0) {
 					counter = in.nextInt();
@@ -118,7 +129,7 @@ public class Terminal {
 	// Lists all the files/folders in the current or given directory
 	public static void ls(String[] arguments) {
 		File dir;
-		if (arguments != null) {
+		if (arguments != null && !arguments[0].equals("|") && !arguments[0].equals(">") && !arguments[0].equals(">>")) {
 			dir = new File(arguments[0]);
 		} else {
 			dir = new File(currentDir);
@@ -127,7 +138,10 @@ public class Terminal {
 		try {
 			File allFiles[] = dir.listFiles();
 			for (int i = 0; i < allFiles.length; i++) {
-	           System.out.print(allFiles[i].getName() + "  ");
+				if (parser.pipe() < 0 && parser.overwrite() < 0 && parser.append() < 0 ) {
+					System.out.print(allFiles[i].getName() + "  ");
+				}
+	           prevOutput.add(allFiles[i].getName());
 	        }
 		} catch (Exception e) {
 			System.out.print("Cannot access '"+ arguments[0] + "' : No such file or directory");
@@ -194,10 +208,6 @@ public class Terminal {
 	}
 
 	// Add any other required command in the same structure
-	
-	public static void pipeOperator() {
-		
-	}
 
 	public static void main(String[] args) throws FileNotFoundException {
 		boolean run = true;
@@ -206,6 +216,7 @@ public class Terminal {
 		System.out.print("\n");
 
 		while(run) {
+			prevOutput.clear();
 			if (defaultDir.equals(currentDir)) {
 				System.out.print(" ~$ ");
 			} else {
@@ -218,11 +229,6 @@ public class Terminal {
 				cmd = parser.getCmd();
 				arg = parser.getArguments();
 				
-				/*for (int j = 0; j < arg.length; j++) {
-					if (arg[j].equals("|")) {
-						
-					}
-				}*/
 				switch(cmd) {
 					case "cp":
 						cp(arg[0], arg[1]);
@@ -252,7 +258,72 @@ public class Terminal {
 						cd(arg);
 						break;
 				}
-
+				// | operator
+				if (parser.pipe() > -1) {
+					switch(arg[parser.pipe()+1]) {
+						case "pwd":
+							pwd();
+							break;
+						case "ls":
+							ls(null);
+							break;
+						case "cat":
+							for (int i = 0; i < prevOutput.size(); i++) {
+								System.out.println(prevOutput.get(i));
+							}
+							break;
+						case "more":
+							int counter = 10;
+							for (int i = 0; i < prevOutput.size(); i++) {
+								System.out.println(prevOutput.get(i));
+								counter--;
+								if (counter == 0) {
+									counter = in.nextInt();
+								}
+							}
+							break;
+					}
+				}
+				// > and >> operators
+				if (parser.overwrite() > -1 || parser.append() > -1) {
+					// This if checks if there is a file name after the operator
+					if (arg.length > parser.overwrite()+1 || arg.length > parser.append()+1) {
+						String fileName = "";
+						// Gets the file name that the user entered
+						if (parser.overwrite() > -1) {
+							fileName = arg[parser.overwrite()+1];
+						} else {
+							fileName = arg[parser.append()+1];
+						}
+						
+						File file;
+						// Handling short and long paths
+						if (fileName.contains(currentDir)) {
+							file = new File(fileName);
+						} else {
+							file = new File(currentDir + "\\" + fileName);
+						}
+						BufferedWriter bufferWriter;
+						try {
+							FileWriter writer;
+							// The appending and overwriting part
+							if (parser.overwrite() > -1) {
+								writer = new FileWriter(file);
+							} else {
+								writer = new FileWriter(file, true);
+							}
+							bufferWriter = new BufferedWriter(writer);
+							// Writing the previous output in the file
+							for (int i = 0; i < prevOutput.size(); i++) {
+								bufferWriter.write(prevOutput.get(i));
+								bufferWriter.newLine();
+							}
+							bufferWriter.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
 			}
 		}
 	}
