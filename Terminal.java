@@ -7,6 +7,7 @@ public class Terminal {
 	static Parser parser = new Parser();
 	static String currentDir = "C:\\", defaultDir = "C:\\";
 	static ArrayList<String> prevOutput = new ArrayList<String>();
+	static boolean secondLS;
 
 
 
@@ -124,6 +125,7 @@ public class Terminal {
 	// Prints the current directory
 	public static void pwd() {
 		System.out.println(currentDir);
+		prevOutput.add(currentDir);
 	};
 
 	// Lists all the files/folders in the current or given directory
@@ -140,6 +142,8 @@ public class Terminal {
 			for (int i = 0; i < allFiles.length; i++) {
 				if (parser.pipe() < 0 && parser.overwrite() < 0 && parser.append() < 0 ) {
 					System.out.print(allFiles[i].getName() + "  ");
+				} else if(parser.pipe() > -1 && secondLS == true) {
+					System.out.print(allFiles[i].getName() + "  ");
 				}
 	           prevOutput.add(allFiles[i].getName());
 	        }
@@ -154,7 +158,7 @@ public class Terminal {
 	public static void cd(String[] arguments) {
 		String userPath, actualPath="";
 		// If there are no arguments change the directory to the default directory
-		if (arguments == null) {
+		if (arguments == null || arguments[0].equals("|")) {
 			userPath = defaultDir;
 		} else {
 			userPath = arguments[0];
@@ -216,6 +220,7 @@ public class Terminal {
 		System.out.print("\n");
 
 		while(run) {
+			secondLS = false;
 			prevOutput.clear();
 			if (defaultDir.equals(currentDir)) {
 				System.out.print(" ~$ ");
@@ -265,6 +270,7 @@ public class Terminal {
 							pwd();
 							break;
 						case "ls":
+							secondLS = true;
 							ls(null);
 							break;
 						case "cat":
