@@ -20,7 +20,7 @@ public class Parser {
 				}
 			}
 			// If the command should have at least 1 argument
-			if (inputArray[0].equals("mkdir") || inputArray[0].equals("rmdir") || inputArray[0].equals("rm") || inputArray[0].equals("cat") || inputArray[0].equals("more")) { 
+			if (inputArray[0].equals("mkdir") || inputArray[0].equals("rmdir") || inputArray[0].equals("cat") || inputArray[0].equals("more")) { 
 				if (inputArray.length < 2) {
 					System.out.println("Invalid number of arguments");
 					return false;
@@ -33,7 +33,14 @@ public class Parser {
 			}
 			// If the command has more than 1 argument
 			if (inputArray[0].equals("cd")) {
-				if (inputArray.length > 2) {
+				if (inputArray.length > 2 && !inputArray[2].equals("|")) {
+					System.out.println("Invalid number of arguments");
+					return false;
+				}
+			}
+			// If the command should have only 1 argument
+			if ( inputArray[0].equals("rm")) {
+				if (inputArray.length != 2) {
 					System.out.println("Invalid number of arguments");
 					return false;
 				}

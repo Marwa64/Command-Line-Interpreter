@@ -23,6 +23,7 @@ public class Terminal {
 	public static void cat(String[] paths) {
 		
 	};
+	
 	// Lists all the files/folders in the current or given directory
 	public static void ls(String[] arguments) {
 		File dir;
@@ -42,9 +43,10 @@ public class Terminal {
 		}
         System.out.println("\n");
 	};
+	
 	// Changes the current directory
 	public static void cd(String[] arguments) {
-		String userPath, actualPath;
+		String userPath, actualPath="";
 		// If there are no arguments change the directory to the default directory
 		if (arguments == null) {
 			userPath = defaultDir;
@@ -53,8 +55,31 @@ public class Terminal {
 		}
 		// This is to handle the short paths
 		// If the path user inputed does not include the current directory and is not empty then we add the current directory to the path
-		if (!userPath.contains(currentDir) && !userPath.equals(defaultDir)) {
-			actualPath = currentDir + "\\" + userPath;
+		if (!userPath.contains(currentDir) && !userPath.equals(defaultDir) && !userPath.contains(":")) {
+			actualPath = currentDir +  userPath;
+			
+		// If the user enters : we go one folder back
+		} else if (userPath.equals(":")){
+			boolean done = false;
+			int index = currentDir.length() - 1;
+			while (!done) {
+				if (currentDir.charAt(index) == '\\') {
+					done = true;
+				} else {
+					index--;
+					if (index < 0) {
+						break;
+					}
+				}
+			}
+			if (done == true) {
+				for (int j = 0; j < index; j++) {
+					actualPath += currentDir.charAt(j);
+				}
+			} else {
+				actualPath = currentDir;
+			}
+
 		} else {
 			actualPath = userPath;
 		}
@@ -63,14 +88,18 @@ public class Terminal {
 		if (dir.isDirectory()) {
 			currentDir = actualPath;
 		} else {
-			System.out.println("'" + userPath + "' : No such file or directory");
+			System.out.println("'" + actualPath + "' : No such file or directory");
 		}
 	}
 	
 	// Add any other required command in the same structure
 	
+	public static void pipeOperator() {
+		
+	}
+	
 	public static void main(String[] args) {
-		boolean run = true;
+		boolean run = true, pipe = false;
 		String cmd;
 		String [] arg;
 		System.out.print("\n");
@@ -88,6 +117,11 @@ public class Terminal {
 				cmd = parser.getCmd();
 				arg = parser.getArguments();
 				
+				/*for (int j = 0; j < arg.length; j++) {
+					if (arg[j].equals("|")) {
+						
+					}
+				}*/
 				switch(cmd) {
 					case "cp":
 						cp(arg[0], arg[1]);
@@ -111,6 +145,8 @@ public class Terminal {
 						cd(arg);
 						break;
 				}
+				
+				
 
 			}
 		}
