@@ -1,15 +1,15 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 import java.util.ArrayList;
 
 public class Terminal {
 	static Scanner in = new Scanner(System.in);
 	static Parser parser = new Parser();
-	static String currentDir = "C:\\", defaultDir = "C:\\";
+	static String currentDir = System.getProperty("user.home"), defaultDir = System.getProperty("user.home");
 	static ArrayList<String> prevOutput = new ArrayList<String>();
 	static boolean secondLS;
-
-
 
 	public static String getAbsolutePath(String inputPath){
 		String abspath = inputPath;
@@ -69,18 +69,6 @@ public class Terminal {
 
 
 	}
-
-	public static void cp(String sourcePath, String destinationPath) {
-
-	}
-
-
-
-	public static void mv(String sourcePath, String destinationPath) {
-
-	}
-
-
 
 	public static void rmdir(String inputPath) {
 		String absPath = getAbsolutePath(inputPath);
@@ -213,9 +201,48 @@ public class Terminal {
 		}
 	}
 
-	// Add any other required command in the same structure
+	public static void date() {
+		java.util.Date currentDate = java.util.Calendar.getInstance().getTime();  
+		System.out.println(currentDate);  
+	}
+	
+	public static void mv(String sourcePath, String destinationPath) throws IOException {
+		File source = new File(sourcePath);
+		File destination = new File(destinationPath);
+		if (!source.exists())
+			System.out.println("mv: cannot stat " + source + ": No such file or directory");
+		if (!destination.exists()) {
+			destination.mkdirs();
+		}
+		else {
+			Files.move(source.toPath(), destination.toPath().resolve(source.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+	
+	public static void mkdir(String directoryNAme) {
+		File newFile = new File(directoryNAme);
+		
+		//state will be true if the file is create for the first time, false otherwise
+		boolean state = newFile.mkdir();
+		if (newFile.exists()) {
+			if (!state) {
+				System.out.println("mkdir: cannot create directory " + directoryNAme + " : File exists");
+			}
+		}
+	}
+	
+	public static void cp(String sourcePath, String destinationPath) {
 
-	public static void main(String[] args) throws FileNotFoundException {
+	}
+	
+	public static void clear() {
+		
+	}
+	
+	public static void args() {
+		
+	}
+	public static void main(String[] args) throws IOException {
 		boolean run = true;
 		String cmd;
 		String [] arg;
@@ -225,9 +252,9 @@ public class Terminal {
 			secondLS = false;
 			prevOutput.clear();
 			if (defaultDir.equals(currentDir)) {
-				System.out.print(" ~$ ");
+				System.out.print(currentDir + "~$ ");
 			} else {
-				System.out.print(" " + currentDir + "$ ");
+				System.out.print(currentDir + "~$ ");
 			}
 			String input = in.nextLine();
 			if (input.equals("exit")) {
@@ -263,6 +290,12 @@ public class Terminal {
 						break;
 					case "cd":
 						cd(arg);
+						break;
+					case "date":
+						date();
+						break;
+					case "mkdir":
+						mkdir(arg[0]);
 						break;
 				}
 				// | operator
