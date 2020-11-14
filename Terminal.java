@@ -276,7 +276,36 @@ public class Terminal {
 		}
 	}
 	
-	public static void args() {
+	public static void args(String command) {
+		if (command.equals("help")) {
+			System.out.println(command + ": no argument");
+		} else if (command.equals("pwd")) {
+			System.out.println(command + ": no argument");
+		} else if (command.equals("date")) {
+			System.out.println(command + ": no argument");
+		} else if (command.equals("exit")) {
+			System.out.println(command + ": no atgument");
+		} else if (command.equals("clear")) {
+			System.out.println(command + ": no argument");
+		} else if (command.equals("mkdir")) {
+			System.out.println(command + ": [arg1]: directoryName");
+		} else if (command.equals("mv")) {
+			System.out.println(command + ": [arg1]: sourcePath, [arg2]: destinationpath");
+		} else if (command.equals("cd")) {
+			System.out.println(command + ": [arg1]: directoryName");
+		} else if (command.equals("ls")) {
+			System.out.println(command + "[arg1]: directoryName");
+		} else if (command.equals("cp")) {
+			System.out.println(command + ": [arg1]: sourcePath, [arg2]: destinationPath");
+		} else if (command.equals("cat")) {
+			System.out.println(command + ": [arg1]: sourcePath");
+		} else if (command.equals("more")) {
+			System.out.println(command + ": [arg1]: directoryPath");
+		} else if (command.equals("rmkdir")) {
+			System.out.println(command + "[arg1]: directoryPath");
+		} else if (command.equals("rm")) {
+			System.out.println(command + ": [arg1]: sourcePath");
+		}
 		
 	}
 	public static void help() {
@@ -356,6 +385,9 @@ public class Terminal {
 						break;
 					case "clear":
 						clear();
+						break;
+					case "args":
+						args(arg[0]);
 						break;
 				}
 				// | operator
