@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class Terminal {
 	static Scanner in = new Scanner(System.in);
 	static Parser parser = new Parser();
-	static String currentDir = System.getProperty("user.home"), defaultDir = System.getProperty("user.home");
+	static String currentDir = "C:\\", defaultDir = "C:\\";
 	static ArrayList<String> prevOutput = new ArrayList<String>();
 	static boolean secondLS;
 
@@ -121,8 +121,17 @@ public class Terminal {
 	// Lists all the files/folders in the current or given directory
 	public static void ls(String[] arguments) {
 		File dir;
+		String path = "";
 		if (arguments != null && !arguments[0].equals("|") && !arguments[0].equals(">") && !arguments[0].equals(">>")) {
-			dir = new File(arguments[0]);
+			// handling short and long paths
+			if (!arguments[0].contains(currentDir) && !arguments[0].equals(defaultDir) && !arguments[0].contains(":")) {
+				path = currentDir + arguments[0] + "\\";
+			} else if (!arguments[0].equals(defaultDir)) {
+				path = arguments[0] + "\\";
+			} else {
+				path = arguments[0];
+			}
+			dir = new File(path);
 		} else {
 			dir = new File(currentDir);
 		}
@@ -130,12 +139,14 @@ public class Terminal {
 		try {
 			File allFiles[] = dir.listFiles();
 			for (int i = 0; i < allFiles.length; i++) {
-				if (parser.pipe() < 0 && parser.overwrite() < 0 && parser.append() < 0 ) {
-					System.out.print(allFiles[i].getName() + "  ");
-				} else if(parser.pipe() > -1 && secondLS == true) {
-					System.out.print(allFiles[i].getName() + "  ");
+				if(!allFiles[i].isHidden()) {
+					if (parser.pipe() < 0 && parser.overwrite() < 0 && parser.append() < 0 ) {
+						System.out.print(allFiles[i].getName() + "  ");
+					} else if(parser.pipe() > -1 && secondLS == true) {
+						System.out.print(allFiles[i].getName() + "  ");
+					}
+		           prevOutput.add(allFiles[i].getName());
 				}
-	           prevOutput.add(allFiles[i].getName());
 	        }
 		} catch (Exception e) {
 			System.out.print("Cannot access '"+ arguments[0] + "' : No such file or directory");
@@ -207,8 +218,23 @@ public class Terminal {
 	}
 	
 	public static void mv(String sourcePath, String destinationPath) throws IOException {
-		File source = new File(sourcePath);
-		File destination = new File(destinationPath);
+		String editedSource="", editedDestination="";
+		// Handling short and long paths
+		if (!sourcePath.contains(currentDir) && !sourcePath.equals(defaultDir) && !sourcePath.contains(":")) {
+			editedSource = currentDir + sourcePath;
+		} else {
+			editedSource = sourcePath;
+		}
+		File source = new File(editedSource);
+		// Handling short and long paths
+		if (!destinationPath.contains(currentDir) && !destinationPath.equals(defaultDir) && !destinationPath.contains(":")) {
+			editedDestination = currentDir + destinationPath + "\\";
+		} else if (!destinationPath.equals(defaultDir)) {
+			editedDestination = destinationPath + "\\";
+		} else {
+			editedDestination = destinationPath;
+		}
+		File destination = new File(editedDestination);
 		if (!source.exists())
 			System.out.println("mv: cannot stat " + source + ": No such file or directory");
 		if (!destination.exists()) {
@@ -219,14 +245,23 @@ public class Terminal {
 		}
 	}
 	
-	public static void mkdir(String directoryNAme) {
-		File newFile = new File(directoryNAme);
+	public static void mkdir(String directoryName) {
+		String path = "";
+		// Handling short and long paths
+		if (!directoryName.contains(currentDir) && !directoryName.equals(defaultDir) && !directoryName.contains(":")) {
+			path = currentDir + directoryName + "\\";
+		} else if (!directoryName.equals(defaultDir)) {
+			path = directoryName + "\\";
+		} else {
+			path = directoryName;
+		}
+		File newFile = new File(path);
 		
 		//state will be true if the file is create for the first time, false otherwise
 		boolean state = newFile.mkdir();
 		if (newFile.exists()) {
 			if (!state) {
-				System.out.println("mkdir: cannot create directory " + directoryNAme + " : File exists");
+				System.out.println("mkdir: cannot create directory " + directoryName + " : File exists");
 			}
 		}
 	}
@@ -236,12 +271,31 @@ public class Terminal {
 	}
 	
 	public static void clear() {
-		
+		for (int i = 0; i < 30; i++) {
+			System.out.println(); 
+		}
 	}
 	
 	public static void args() {
 		
 	}
+	public static void help() {
+		System.out.println("args : List all command arguments \n"
+							+ "date : Current date/time \n"
+							+ "cd: Changes the current directory to another one \n"
+							+ "pwd: Display current user directory \n"
+							+ "ls: Lists all programs in given directory \n"
+							+ "cp: If the last argument names an existing directory, cp copies each other given file into a file with the same name in that directory. Otherwise, if only two files are given, it copies the first onto the second \n"
+							+ "cat: Prints the content of any given file \n"
+							+ "more: Display and scroll down the output page by page or line by line \n"
+							+ "mkdir: Creates a directory with the given name \n"
+							+ "rmdir: Removes each given empty directory \n"
+							+ "mv: Moves a given file to a given directory \n"
+							+ "rm: Removes the given file, can also be used to remove directories and its subdirectories \n"
+							+ "clear: Clears the current terminal screen \n"
+							+ "exit : Stop all \n");
+	}
+	
 	public static void main(String[] args) throws IOException {
 		boolean run = true;
 		String cmd;
@@ -252,7 +306,7 @@ public class Terminal {
 			secondLS = false;
 			prevOutput.clear();
 			if (defaultDir.equals(currentDir)) {
-				System.out.print(currentDir + "~$ ");
+				System.out.print("~$ ");
 			} else {
 				System.out.print(currentDir + "~$ ");
 			}
@@ -296,6 +350,12 @@ public class Terminal {
 						break;
 					case "mkdir":
 						mkdir(arg[0]);
+						break;
+					case "help":
+						help();
+						break;
+					case "clear":
+						clear();
 						break;
 				}
 				// | operator
