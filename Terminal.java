@@ -252,6 +252,31 @@ public class Terminal {
 	}
 	
 	public static void cp(String sourcePath, String destinationPath) throws IOException { 
+		String editedSource="", editedDestination="";
+		// Handling short and long paths
+		if (!sourcePath.contains(currentDir) && !sourcePath.equals(defaultDir) && !sourcePath.contains(":")) {
+			editedSource = currentDir + sourcePath;
+		} else {
+			editedSource = sourcePath;
+		}
+		File source = new File(editedSource);
+		// Handling short and long paths
+		if (!destinationPath.contains(currentDir) && !destinationPath.equals(defaultDir) && !destinationPath.contains(":")) {
+			editedDestination = currentDir + destinationPath + "\\";
+		} else if (!destinationPath.equals(defaultDir)) {
+			editedDestination = destinationPath + "\\";
+		} else {
+			editedDestination = destinationPath;
+		}
+		File destination = new File(editedDestination);
+		if (!source.exists())
+			System.out.println("mv: cannot stat " + source + ": No such file or directory");
+		if (!destination.exists()) {
+			destination.mkdirs();
+		}
+		else {
+			Files.copy(source.toPath(), destination.toPath().resolve(source.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 	//clear screen
 	public static void clear() {
