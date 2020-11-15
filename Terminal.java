@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
@@ -250,14 +251,13 @@ public class Terminal {
 		}
 	}
 	
-	public static void cp(String sourcePath, String destinationPath) {
-
+	public static void cp(String sourcePath, String destinationPath) throws IOException { 
 	}
-	
+	//clear screen
 	public static void clear() {
-		for (int i = 0; i < 30; i++) {
-			System.out.println(); 
-		}
+		//'H' means move to top of the screen, '2J' means "clear the entire screen
+		System.out.print("\033[H\033[2J");  
+		System.out.flush();  
 	}
 	
 	public static void args(String command) {
