@@ -74,39 +74,23 @@ public class Terminal {
 		String absPath = getAbsolutePath(inputPath);
 		File toDelete = new File(absPath);
 		if(toDelete.exists())
-			recursiveDelete(toDelete);
+			rm(inputPath);
 		else System.out.println("No such folder or file");
 
 	}
 
-	public static void recursiveDelete(File toDelete){
-		if(!toDelete.exists())
-			return;
-
-		if(toDelete.isDirectory()){
-			for(File f : toDelete.listFiles()){
-				recursiveDelete(f);
-			}
-		}
-
-		toDelete.delete();
-
-		System.out.println("Deleted file/folder: "+toDelete.getAbsolutePath());
-
-
-	}
 
 	public static void rm(String inputPath) {
 		String absPath = getAbsolutePath(inputPath);
 	
 		File toDelete= new File(absPath);
 	
-	
-		if (!toDelete.isDirectory() && toDelete.exists()) {
+		if (toDelete.exists()) {
 				if (toDelete.delete()) {
-					System.out.println("Deleted the file: " + toDelete.getName());
+					System.out.println("Deleted the directory: " + toDelete.getName());
 				}
 			}
+
 		else System.out.println("No such file");
 	}
 
