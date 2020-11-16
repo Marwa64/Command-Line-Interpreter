@@ -1,6 +1,8 @@
 import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -252,31 +254,42 @@ public class Terminal {
 	}
 	
 	public static void cp(String sourcePath, String destinationPath) throws IOException { 
-		String editedSource="", editedDestination="";
-		// Handling short and long paths
-		if (!sourcePath.contains(currentDir) && !sourcePath.equals(defaultDir) && !sourcePath.contains(":")) {
-			editedSource = currentDir + sourcePath;
-		} else {
-			editedSource = sourcePath;
-		}
-		File source = new File(editedSource);
-		// Handling short and long paths
-		if (!destinationPath.contains(currentDir) && !destinationPath.equals(defaultDir) && !destinationPath.contains(":")) {
-			editedDestination = currentDir + destinationPath + "\\";
-		} else if (!destinationPath.equals(defaultDir)) {
-			editedDestination = destinationPath + "\\";
-		} else {
-			editedDestination = destinationPath;
-		}
-		File destination = new File(editedDestination);
-		if (!source.exists())
-			System.out.println("mv: cannot stat " + source + ": No such file or directory");
-		if (!destination.exists()) {
-			destination.mkdirs();
-		}
-		else {
-			Files.copy(source.toPath(), destination.toPath().resolve(source.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
-		}
+		Path source = Paths.get(sourcePath);
+	    Path dest = Paths.get(destinationPath);
+	    //check if source exit
+	    if (Files.exists(source)){
+	    	//if destination exits copy source to destination, create a destination otherwise
+	    	if (Files.exists(dest)){
+	    		InputStream inputStream = new FileInputStream(sourcePath);
+	    	    OutputStream outputStream = new FileOutputStream(destinationPath);
+	    	    try {
+	    	        byte[] buffer = new byte[1024];
+	    	        int length = 0;
+	    	        while ((length = inputStream.read(buffer)) > 0) {
+	    	            outputStream.write(buffer, 0, length);
+	    	        }
+	    	    } finally {
+	    	        inputStream.close();
+	    	        outputStream.close();
+	    	    }
+	    	} else {
+	    		File destination = new File(destinationPath);
+	    		InputStream inputStream = new FileInputStream(sourcePath);
+	    	    OutputStream outputStream = new FileOutputStream(destinationPath);
+	    	    try {
+	    	        byte[] buffer = new byte[1024];
+	    	        int length = 0;
+	    	        while ((length = inputStream.read(buffer)) > 0) {
+	    	            outputStream.write(buffer, 0, length);
+	    	        }
+	    	    } finally {
+	    	        inputStream.close();
+	    	        outputStream.close();
+	    	    }
+	    	}
+	    } else {
+	    	System.out.println(source + " no such File or Directory exits");
+	    }
 	}
 	//clear screen
 	public static void clear() {
