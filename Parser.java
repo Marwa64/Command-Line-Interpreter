@@ -61,7 +61,7 @@ public class Parser {
 				}
 			}
 			// If the command should have only 1 argument
-			if ( inputArray[0].equals("rm")) {
+			if ( inputArray[0].equals("rm") || inputArray[0].equals("args")) {
 				if (inputArray.length != 2+n) {
 					System.out.println("Invalid number of arguments");
 					return false;

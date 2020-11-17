@@ -1,8 +1,5 @@
 import java.io.*;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -110,14 +107,7 @@ public class Terminal {
 		File dir;
 		String path = "";
 		if (arguments != null && !arguments[0].equals("|") && !arguments[0].equals(">") && !arguments[0].equals(">>")) {
-			// handling short and long paths
-			if (!arguments[0].contains(currentDir) && !arguments[0].equals(defaultDir) && !arguments[0].contains(":")) {
-				path = currentDir + arguments[0] + "\\";
-			} else if (!arguments[0].equals(defaultDir)) {
-				path = arguments[0] + "\\";
-			} else {
-				path = arguments[0];
-			}
+			path = getPath(arguments[0]);
 			dir = new File(path);
 		} else {
 			dir = new File(currentDir);
@@ -153,11 +143,11 @@ public class Terminal {
 		}
 		// This is to handle the short paths
 		// If the path user inputed does not include the current directory and is not empty then we add the current directory to the path
-		if (!userPath.contains(currentDir) && !userPath.equals(defaultDir) && !userPath.contains(":")) {
+		if (!userPath.contains(currentDir) && !userPath.equals(defaultDir) && !userPath.contains(":") && !userPath.contains("..")) {
 				actualPath = currentDir + userPath + "\\";
 			
 		// If the user enters : we go one folder back
-		} else if (userPath.equals(":")){
+		} else if (userPath.equals("..")){
 			if (!currentDir.equals(defaultDir)) {
 				boolean done = false;
 				int index = currentDir.length() - 2;
@@ -205,43 +195,25 @@ public class Terminal {
 	}
 	
 	public static void mv(String sourcePath, String destinationPath) throws IOException {
-		String editedSource="", editedDestination="";
-		// Handling short and long paths
-		if (!sourcePath.contains(currentDir) && !sourcePath.equals(defaultDir) && !sourcePath.contains(":")) {
-			editedSource = currentDir + sourcePath;
+		String editedSource = getPath(sourcePath), editedDestination = getPath(destinationPath);
+		File source = new File(editedSource), destination = new File(editedDestination);
+		if (!source.exists()) {
+			System.out.println("mv: cannot access " + source + ": No such file or directory");
 		} else {
-			editedSource = sourcePath;
-		}
-		File source = new File(editedSource);
-		// Handling short and long paths
-		if (!destinationPath.contains(currentDir) && !destinationPath.equals(defaultDir) && !destinationPath.contains(":")) {
-			editedDestination = currentDir + destinationPath + "\\";
-		} else if (!destinationPath.equals(defaultDir)) {
-			editedDestination = destinationPath + "\\";
-		} else {
-			editedDestination = destinationPath;
-		}
-		File destination = new File(editedDestination);
-		if (!source.exists())
-			System.out.println("mv: cannot stat " + source + ": No such file or directory");
-		if (!destination.exists()) {
-			destination.mkdirs();
-		}
-		else {
-			Files.move(source.toPath(), destination.toPath().resolve(source.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+			if (!destination.exists()) {
+				if (destinationPath.indexOf("\\") == -1) {
+					source.renameTo(destination);
+				} else {
+					System.out.println("Cannot access '"+ editedDestination + "' : No such file or directory");
+				}
+			} else {
+				Files.move(source.toPath(), destination.toPath().resolve(source.toPath().getFileName()),StandardCopyOption.REPLACE_EXISTING);
+			}
 		}
 	}
 	
 	public static void mkdir(String directoryName) {
-		String path = "";
-		// Handling short and long paths
-		if (!directoryName.contains(currentDir) && !directoryName.equals(defaultDir) && !directoryName.contains(":")) {
-			path = currentDir + directoryName + "\\";
-		} else if (!directoryName.equals(defaultDir)) {
-			path = directoryName + "\\";
-		} else {
-			path = directoryName;
-		}
+		String path = getPath(directoryName);
 		File newFile = new File(path);
 		
 		//state will be true if the file is create for the first time, false otherwise
@@ -254,14 +226,15 @@ public class Terminal {
 	}
 	
 	public static void cp(String sourcePath, String destinationPath) throws IOException { 
-		Path source = Paths.get(sourcePath);
-	    Path dest = Paths.get(destinationPath);
+		String editedSource = getPath(sourcePath), editedDestination = getPath(destinationPath);
+		File source = new File(editedSource), dest = new File(editedDestination);
+
 	    //check if source exit
-	    if (Files.exists(source)){
+	    if (source.exists()){
 	    	//if destination exits copy source to destination, create a destination otherwise
-	    	if (Files.exists(dest)){
-	    		InputStream inputStream = new FileInputStream(sourcePath);
-	    	    OutputStream outputStream = new FileOutputStream(destinationPath);
+	    	if (dest.exists()){
+	    		InputStream inputStream = new FileInputStream(editedSource);
+	    	    OutputStream outputStream = new FileOutputStream(editedDestination);
 	    	    try {
 	    	        byte[] buffer = new byte[1024];
 	    	        int length = 0;
@@ -273,9 +246,8 @@ public class Terminal {
 	    	        outputStream.close();
 	    	    }
 	    	} else {
-	    		File destination = new File(destinationPath);
-	    		InputStream inputStream = new FileInputStream(sourcePath);
-	    	    OutputStream outputStream = new FileOutputStream(destinationPath);
+	    		InputStream inputStream = new FileInputStream(editedSource);
+	    	    OutputStream outputStream = new FileOutputStream(editedDestination);
 	    	    try {
 	    	        byte[] buffer = new byte[1024];
 	    	        int length = 0;
@@ -293,9 +265,28 @@ public class Terminal {
 	}
 	//clear screen
 	public static void clear() {
-		//'H' means move to top of the screen, '2J' means "clear the entire screen
-		System.out.print("\033[H\033[2J");  
-		System.out.flush();  
+		if (System.getProperty("os.name").contains("Windows")){
+			for (int i = 0; i < 50; i++) {
+				System.out.println(); 
+			}
+		} else {
+			//'H' means move to top of the screen, '2J' means "clear the entire screen
+			System.out.print("\033[H\033[2J");  
+			System.out.flush();  
+		}
+	}
+	
+	public static String getPath(String path) {
+		String editedPath="";
+		// Handling short and long paths
+		if (!path.contains(currentDir) && !path.equals(defaultDir) && !path.contains(":")) {
+			editedPath = currentDir + path;
+		} else if (!path.equals(defaultDir)) {
+			editedPath = path + "\\";
+		} else {
+			editedPath = path;
+		}
+		return editedPath;
 	}
 	
 	public static void args(String command) {
